@@ -5,7 +5,7 @@
             <td>
                 <div style="background:#fff">
                     <div style="padding: 20px; text-align: center;">
-                        <img src="https://s3.bmp.ovh/imgs/2024/04/12/5cd1bf1456e513a3.png" alt="Logo" style="width: 100px;">
+                        <h1 style="margin: 0; font-size: 28px; color: #333;">{{ config('v2board.app_name', 'V2Board') }}</h1>
                     </div>
                     <table width="100%" border="0" cellspacing="0" cellpadding="0">
                         <tbody>

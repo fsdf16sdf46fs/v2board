@@ -5,9 +5,6 @@
             <td>
                 {{-- Logo --}}
                 <div style="padding: 25px 20px; text-align: center; border-bottom: 1px solid #eee;">
-                    {{-- 建议使用公共可访问的图片 URL --}}
-                    {{-- <img src="https://s3.bmp.ovh/imgs/2024/04/12/5cd1bf1456e513a3.png" alt="Logo" style="width: 100px; height: auto;"> --}}
-                    {{-- 或者直接显示应用名称 --}}
                     <h1 style="margin: 0; font-size: 28px; color: #333;">{{ $name }}</h1>
                 </div>
 
