@@ -9,6 +9,7 @@ use App\Protocols\General;
 use App\Services\ServerService;
 use App\Services\UserService;
 use App\Utils\CacheKey;
+use App\Utils\CampusNetwork;
 use App\Utils\Helper;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -138,7 +139,14 @@ class ClientController extends Controller
         $array2 = $commonArray;
         $array3 = $commonArray;
 
-        if($userService->hasPlanButExpired($user)){
+        // 校园网（教育网/科技网）IP 优先拦截：只下发提示节点，不给真实节点
+        if ((int)config('v2board.campus_block_enable', 1) && CampusNetwork::contains($client_ip)) {
+            $array1['name'] = "请断开校园网等公共网络";
+            $array2['name'] = "使用自身流量或热点";
+
+            $servers[] = $array1;
+            $servers[] = $array2;
+        }elseif($userService->hasPlanButExpired($user)){
             $array1['name'] = "您的套餐已过期";
             $array2['name'] = "请到官网续费";
             $array3['name'] = "如需帮助，可工单/邮件联系";

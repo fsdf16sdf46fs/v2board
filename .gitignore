@@ -5,6 +5,7 @@
 /public/env.example.js
 /public/*.htaccess
 /storage/*.key
+/storage/app/campus.txt
 /vendor
 .claude
 CLAUDE.md
