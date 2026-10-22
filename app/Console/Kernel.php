@@ -60,8 +60,6 @@ class Kernel extends ConsoleKernel
         $schedule->command('customFunction:sendTrafficStatisticsToGroup')->dailyAt('0:13'); //推送流量排行到用户群
         $schedule->command('ipdb:download')->weeklyOn(1, '03:00');// 每周一 03:00 执行下载任务
         $schedule->command('ipdb:campus')->weeklyOn(1, '03:10');// 每周一 03:10 更新校园网 IP 段（订阅拦截用）
-        $schedule->command('emby:check-expiration')->dailyAt('03:00'); //检查 emby 过期，则删除用户
-        $schedule->command('emby:check-availability')->everyTenMinutes(); //检查 emby 上游 API 有效性
 
         //delete user token request more than 3 days ago
         $schedule->call(function () {
@@ -79,28 +77,6 @@ class Kernel extends ConsoleKernel
                 Cache::forget($key);
             }
         })->everyFiveMinutes();
-
-        // 添加：每日检查并发送 Emby 到期提醒邮件 (默认提前3天)
-        $schedule->call(function () {
-            // 实例化 MailService
-            $mailService = app(\App\Services\MailService::class);
-            // 只查询 emby_expired_at 不为空且未过期的用户，并分块处理
-            \App\Models\User::whereNotNull('emby_expired_at')
-                ->where('emby_expired_at', '>', time())
-                ->chunkById(200, function ($users) use ($mailService) { // 使用 chunkById 提高效率
-                    foreach ($users as $user) {
-                        try {
-                            $mailService->remindEmbyExpire($user);
-                        } catch (\Exception $e) {
-                            \Illuminate\Support\Facades\Log::error("发送 Emby 到期提醒邮件失败 (用户ID: {$user->id}): " . $e->getMessage());
-                        }
-                    }
-                });
-            \Illuminate\Support\Facades\Log::info('每日 Emby 到期提醒邮件检查任务执行完毕。');
-        })->dailyAt('10:00'); // 设置合适的执行时间，例如每天早上10点
-
-
-
     }
 
     /**

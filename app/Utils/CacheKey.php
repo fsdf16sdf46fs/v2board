@@ -35,7 +35,6 @@ class CacheKey
         'LOGIN_UPDATES' => '登录信息更新',
         'BLACKLISTED_SESSIONS' => '黑名单会话',
         'USD_TO_CNY_RATE' => '美元兑人民币汇率',
-        'LAST_SEND_EMAIL_REMIND_EMBY_EXPIRE' => '最后发送 Emby 到期邮件提醒',
         'IP_SENTINEL_BLACKLIST' => 'IP哨兵黑名单缓存',
         'ALIVE_IP_USER_NODE' => '某节点对某用户报告的活跃IP集合（跨机IP去重）',
         'ALIVE_IP_USER_NODES' => '某用户当前被哪些节点报告过活跃IP（跨机IP去重索引）',

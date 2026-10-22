@@ -25,16 +25,11 @@ class KnowledgeController extends Controller
                 $this->formatAccessData($knowledge['body']);
             }
 
-            if(!$this->hasActiveEmbySubscription($user)){
-                $this->formatEmbyAccessData($knowledge['body']);
-            }
-
             $subscribeUrl = Helper::buildSubscribeUrl($user['token']);
             $knowledge['body'] = str_replace('{{siteName}}', config('v2board.app_name', 'V2Board'), $knowledge['body']);
             $knowledge['body'] = str_replace('{{subscribeUrl}}', $subscribeUrl, $knowledge['body']);
             $knowledge['body'] = str_replace('{{urlEncodeSubscribeUrl}}', urlencode($subscribeUrl), $knowledge['body']);
             $knowledge['body'] = str_replace('{{withdrawLimit}}', config('v2board.commission_withdraw_limit',100), $knowledge['body']);
-            $knowledge['body'] = str_replace('{{embyServerUrl}}', config('v2board.emby_server_url',), $knowledge['body']);
             $currency = (config('v2board.currency') === 'USD') ? '美元' : '元';
             $knowledge['body'] = str_replace('{{currency}}', $currency, $knowledge['body']);
             $knowledge['body'] = str_replace(
@@ -82,22 +77,6 @@ class KnowledgeController extends Controller
                 $body = str_replace($accessData, '<div class="v2board-no-access">'. __("您需要购买订阅才能查看本区域内容") . '<br><br>' . '<a class="btn btn-hero-primary" style="color:#f5f8fa;" href="#/plan">购买订阅</a>' . '</div>', $body);
             }
         }
-    }
-
-    private function formatEmbyAccessData(&$body)
-    {
-        while (strpos($body, '<!--emby access start-->') !== false) {
-            $accessData = $this->getBetween($body, '<!--emby access start-->', '<!--emby access end-->');
-            if ($accessData) {
-                $body = str_replace($accessData, '<div class="v2board-no-access">'. __("您需要购买 Emby 服务才能查看本区域内容") . '<br><br>' . '<a class="btn btn-hero-primary" style="color:#f5f8fa;" href="#/plan/10">购买订阅</a>' . '</div>', $body);
-            }
-        }
-    }
-
-    private function hasActiveEmbySubscription(User $user): bool
-    {
-        // 检查是否有 Emby 用户名 且 Emby 到期时间戳大于当前时间
-        return !empty($user->emby_user_name) && $user->emby_expired_at > time();
     }
 
 }

@@ -21,7 +21,6 @@ class CouponController extends Controller
         $couponService->setUserOrderStatus($user);
         $couponService->setUserInviterId($user);
         $couponService->setPeriod($request->input('period'));
-        $couponService->setPlanPurchased($user);
         $couponService->check();
         return response([
             'data' => $couponService->getCoupon()
