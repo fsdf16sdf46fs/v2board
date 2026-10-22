@@ -115,7 +115,7 @@ class XdbSearcher
             // read the vector index block
             $buff = $this->read(self::HeaderInfoLength + $idx, 8);
             if ($buff === null) {
-                throw new Exception("failed to read vector index at ${idx}");
+                throw new Exception("failed to read vector index at {$idx}");
             }
 
             $sPtr = self::getLong($buff, 0);
@@ -136,7 +136,7 @@ class XdbSearcher
             // read the segment index
             $buff = $this->read($p, self::SegmentIndexSize);
             if ($buff == null) {
-                throw new Exception("failed to read segment index at ${p}");
+                throw new Exception("failed to read segment index at {$p}");
             }
 
             $sip = self::getLong($buff, 0);
