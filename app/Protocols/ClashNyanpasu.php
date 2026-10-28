@@ -203,9 +203,12 @@ class ClashNyanpasu
                 if ((int)$server['tls'] === 2) {
                     $publicKey = $tls_settings['public_key'];
                     $shortID = $tls_settings['short_id'];
+                    // Xray v26.9.9+ 的 REALITY 服务端会拒绝不带 X25519MLKEM768 的 Client Hello，
+                    // 而 Mihomo 默认把 MLKEM 删掉，必须显式打开（Mihomo 1.19.9+；更老的版本会忽略这个键）。
                     $array['reality-opts'] = [
                         'public-key' => $publicKey,
-                        'short-id' => $shortID
+                        'short-id' => $shortID,
+                        'support-x25519mlkem768' => true
                     ];
                     $array['client-fingerprint'] = 'chrome';
                 }
