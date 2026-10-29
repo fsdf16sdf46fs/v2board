@@ -12,6 +12,7 @@ use App\Jobs\SendEmailJob2;
 use App\Models\Plan;
 use App\Models\User;
 use App\Services\AuthService;
+use App\Services\UserService;
 use App\Utils\Helper;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -69,6 +70,7 @@ class UserController extends Controller
         $res = $userModel->forPage($current, $pageSize)
             ->get();
         $plan = Plan::get();
+        $userService = new UserService();
         for ($i = 0; $i < count($res); $i++) {
             for ($k = 0; $k < count($plan); $k++) {
                 if ($plan[$k]['id'] == $res[$i]['plan_id']) {
@@ -76,6 +78,12 @@ class UserController extends Controller
                 }
             }
             $res[$i]['subscribe_url'] = Helper::buildSubscribeUrl($res[$i]['token']);
+            // 管理员不展示在线 IP 和最后连接的节点
+            if ($res[$i]['is_admin']) {
+                unset($res[$i]['last_server_id'], $res[$i]['last_server_type']);
+                continue;
+            }
+            $res[$i]['alive_ips'] = $userService->getAliveIps($res[$i]['id']);
         }
         return response([
             'data' => $res,

@@ -54,8 +54,11 @@ class TrafficFetchJob implements ShouldQueue
                     $user = User::lockForUpdate()->find($userId);
                     if (!$user) continue;
 
-                    // 更新用户的时间戳和流量数据
+                    // 更新用户的时间戳、最后连接节点和流量数据（各协议节点 id 独立，需连同类型记录）
+                    // 管理员不记录最后连接节点，已有的记录（如后来被设为管理员）在下次上报时清空
                     $user->t = time();
+                    $user->last_server_id = $user->is_admin ? null : $this->server['id'];
+                    $user->last_server_type = $user->is_admin ? null : $this->protocol;
                     $upstream = $this->data[$userId][0];
                     $downstream = $this->data[$userId][1];
                     $user->u += $upstream * $rate;

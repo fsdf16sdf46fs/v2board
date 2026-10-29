@@ -8,6 +8,8 @@ use App\Jobs\TrafficFetchJob;
 use App\Models\Order;
 use App\Models\Plan;
 use App\Models\User;
+use App\Utils\CacheKey;
+use Illuminate\Support\Facades\Redis;
 
 class UserService
 {
@@ -228,6 +230,17 @@ class UserService
         StatServerJob::dispatch($filteredData, $server, $protocol, 'd');
     }
 
+
+    // 节点上报的用户在线 IP（集群合并后，与 UniProxyController::alivelist 返回给节点的一致），只读
+    public function getAliveIps(int $userId): array
+    {
+        $ips = [];
+        foreach (Redis::smembers(CacheKey::get('ALIVE_IP_USER_NODES', $userId)) as $nodeRef) {
+            // 已过期的节点集合 smembers 返回空数组，无需 exists 判断
+            $ips = array_merge($ips, Redis::smembers(CacheKey::get('ALIVE_IP_USER_NODE', "{$userId}_{$nodeRef}")));
+        }
+        return array_values(array_unique($ips));
+    }
 
     public function updateLoginRecords(array $batch)
     {
