@@ -260,6 +260,38 @@ class MailService
 
     }
 
+    // 用校园网连接节点被封禁的提醒，$until 为 null 表示已永久停用
+    public function remindCampusBan(User $user, string $ip, int $count, ?int $until)
+    {
+        $userName = explode('@', $user->email)[0];
+        $appName = config('v2board.app_name', 'V2Board');
+        $rules = [];
+        foreach (UserService::CAMPUS_BAN_DURATIONS as $i => $seconds) {
+            $rules[] = '第 ' . ($i + 1) . ' 次暂停 ' . $this->formatDuration($seconds);
+        }
+        $rules[] = '第 ' . (count($rules) + 1) . ' 次账号将被永久停用';
+        SendEmailJob::dispatch([
+            'email' => $user->email,
+            'subject' => ($until ? '账号已暂停使用：检测到您用校园网连接节点' : '账号已停用通知') . " | {$appName}",
+            'template_name' => 'remindCampusBan',
+            'template_value' => [
+                'name' => $appName,
+                'url' => config('v2board.app_url'),
+                'userName' => $userName,
+                'ip' => $ip,
+                'count' => $count,
+                'duration' => $until ? $this->formatDuration(UserService::CAMPUS_BAN_DURATIONS[$count - 1]) : null,
+                'until' => $until ? date('Y-m-d H:i', $until) : null,
+                'rules' => implode('，', $rules) . '。'
+            ]
+        ]);
+    }
+
+    private function formatDuration(int $seconds): string
+    {
+        return $seconds % 3600 === 0 ? ($seconds / 3600) . ' 小时' : ($seconds / 60) . ' 分钟';
+    }
+
     /**
      * 发送系统补偿通知 (支持延迟队列)
      *

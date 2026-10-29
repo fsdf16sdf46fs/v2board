@@ -10,6 +10,8 @@ namespace App\Utils;
  */
 class CampusNetwork
 {
+    private static $cidrs;
+
     public static function contains($ip): bool
     {
         $ip = @inet_pton((string)$ip);
@@ -21,13 +23,27 @@ class CampusNetwork
             $ip = substr($ip, 12);
         }
 
-        foreach (self::lines() as $line) {
-            $cidr = self::parseCidr($line);
-            if ($cidr !== null && self::inCidr($ip, $cidr[0], $cidr[1])) {
+        foreach (self::cidrs() as $cidr) {
+            if (self::inCidr($ip, $cidr[0], $cidr[1])) {
                 return true;
             }
         }
         return false;
+    }
+
+    // 网段只解析一次，本次请求内复用（alivelist 一次要判断所有在线用户的所有 IP）
+    private static function cidrs(): array
+    {
+        if (self::$cidrs === null) {
+            self::$cidrs = [];
+            foreach (self::lines() as $line) {
+                $cidr = self::parseCidr($line);
+                if ($cidr !== null) {
+                    self::$cidrs[] = $cidr;
+                }
+            }
+        }
+        return self::$cidrs;
     }
 
     /**

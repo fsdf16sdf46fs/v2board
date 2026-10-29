@@ -168,6 +168,11 @@ class ServerService
                     ->orWhereNull('expired_at');
             })
             ->where('banned', 0)
+            // 用校园网连接节点被临时封禁的用户，到期前不下发
+            ->where(function ($query) {
+                $query->whereNull('campus_ban_until')
+                    ->orWhere('campus_ban_until', '<=', time());
+            })
             ->where(function ($query) {
                 $query->where('is_PAGO', '!=', 1)
                     ->orWhere(function ($query) {

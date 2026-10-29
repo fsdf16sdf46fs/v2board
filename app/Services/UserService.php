@@ -16,6 +16,8 @@ class UserService
 {
     // 近期节点流量按 10 分钟分段记录，后台合并当前段和上一段（覆盖最近 10～20 分钟）
     const RECENT_SERVER_BUCKET = 600;
+    // 用校园网连接节点的临时封禁时长（秒），依次对应第 1、2、3 次；第 4 次永久封禁
+    const CAMPUS_BAN_DURATIONS = [900, 7200, 43200];
 
     private function calcResetDayByMonthFirstDay()
     {
@@ -277,6 +279,48 @@ class UserService
             $servers[] = ['type' => $type, 'id' => (int)$id, 'traffic' => Helper::trafficConvert($bytes)];
         }
         return $servers;
+    }
+
+    /**
+     * 节点上报某用户正在用校园网 IP 连接：次数 +1 并封禁（前 3 次临时封禁，第 4 次永久封禁），发邮件提醒
+     * 返回 true 表示该用户已处于封禁状态（本次刚封禁或此前已封禁），这次上报应忽略；管理员不封禁，返回 false
+     */
+    public function banCampusUser(int $userId, string $ip, string $nodeRef): bool
+    {
+        $user = User::find($userId);
+        if (!$user || $user->is_admin) return false;
+        $now = time();
+        if ($user->banned || $user->campus_ban_until > $now) return true;
+
+        $count = $user->campus_ban_count + 1;
+        $until = null;
+        $data = ['campus_ban_count' => $count];
+        if ($count > count(self::CAMPUS_BAN_DURATIONS)) {
+            $data['banned'] = 1;
+        } else {
+            $until = $now + self::CAMPUS_BAN_DURATIONS[$count - 1];
+            $data['campus_ban_until'] = $until;
+        }
+        // 带上旧次数做条件更新：多个节点同时上报同一用户时只有一个能更新成功，只算一次
+        $updated = User::where('id', $userId)
+            ->where('campus_ban_count', $user->campus_ban_count)
+            ->where('banned', 0)
+            ->update($data);
+        if (!$updated) return true;
+
+        if (isset($data['banned'])) {
+            (new AuthService($user))->removeAllSession();
+        }
+        // 删掉该用户的在线 IP 记录，避免解封后旧的校园网 IP 经集群合并回到节点、又被记一次
+        $nodesKey = CacheKey::get('ALIVE_IP_USER_NODES', $userId);
+        foreach (Redis::smembers($nodesKey) as $ref) {
+            Redis::del(CacheKey::get('ALIVE_IP_USER_NODE', "{$userId}_{$ref}"));
+        }
+        Redis::del($nodesKey);
+
+        (new MailService())->remindCampusBan($user, $ip, $count, $until);
+        info("校园网封禁：用户 {$userId}（{$user->email}）第 {$count} 次，IP {$ip}，节点 {$nodeRef}，" . ($until ? '至 ' . date('Y-m-d H:i:s', $until) : '永久封禁'));
+        return true;
     }
 
     public function updateLoginRecords(array $batch)

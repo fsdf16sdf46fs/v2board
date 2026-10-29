@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Services\ServerService;
 use App\Services\UserService;
 use App\Utils\CacheKey;
+use App\Utils\CampusNetwork;
 use App\Utils\Helper;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -160,6 +161,8 @@ class UniProxyController extends Controller
         $ttl = max(120, $pullInterval * 3);
 
         $result = [];
+        $userService = new UserService();
+        $campusBanEnable = (int)config('v2board.campus_ban_enable', 1);
 
         foreach ($data as $entry) {
             $uid = (int)($entry['Uid'] ?? 0);
@@ -169,6 +172,13 @@ class UniProxyController extends Controller
             $ips = $entry['Ips'] ?? [];
             if (!is_array($ips)) {
                 $ips = [];
+            }
+
+            // 用校园网 IP 连接节点：封禁该用户。封禁中的用户这次上报不写入也不返回，
+            // 避免旧的校园网 IP 留在 Redis 里，解封后经集群合并回到节点、又被记一次
+            $campusIp = $campusBanEnable ? $this->findCampusIp($ips) : null;
+            if ($campusIp !== null && $userService->banCampusUser($uid, $campusIp, $nodeRef)) {
+                continue;
             }
 
             // Key 命名走 CacheKey 中心化注册；Value 层面仍用 Redis 原生集合操作，
@@ -212,5 +222,15 @@ class UniProxyController extends Controller
         }
 
         return response()->json($result);
+    }
+
+    private function findCampusIp(array $ips): ?string
+    {
+        foreach ($ips as $ip) {
+            if (CampusNetwork::contains($ip)) {
+                return (string)$ip;
+            }
+        }
+        return null;
     }
 }
