@@ -56278,7 +56278,8 @@
                                 placement: "top",
                                 title: g.a.createElement("div", null,
                                     g.a.createElement("div", null, t.t ? "\u6700\u540e\u5728\u7ebf".concat(w()(1e3 * t.t).format("YYYY-MM-DD HH:mm:ss")) : "\u4ece\u672a\u5728\u7ebf"),
-                                    t.last_server_id ? g.a.createElement("div", null, "\u6700\u540e\u8282\u70b9\uff1a".concat(t.last_server_type, " #", t.last_server_id)) : null,
+                                    t.recent_servers && t.recent_servers.length ? g.a.createElement("div", null, "\u8fd1\u671f\u8282\u70b9\uff08\u6309\u6d41\u91cf\uff09\uff1a", t.recent_servers.map(i => g.a.createElement("div", { key: i.type + i.id }, i.type, " #", i.id, "\u3000", i.traffic)))
+                                        : t.last_server_id ? g.a.createElement("div", null, "\u6700\u540e\u8282\u70b9\uff1a".concat(t.last_server_type, " #", t.last_server_id)) : null,
                                     t.alive_ips && t.alive_ips.length ? g.a.createElement("div", null, "\u5728\u7ebf IP\uff08".concat(t.alive_ips.length, "\uff09\uff1a"), t.alive_ips.map(i => g.a.createElement("div", { key: i }, i))) : null)
                             }, g.a.createElement(d["a"], {
                                 status: (new Date).getTime() / 1e3 - 600 > t.t ? "default" : "success"

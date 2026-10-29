@@ -38,6 +38,7 @@ class CacheKey
         'IP_SENTINEL_BLACKLIST' => 'IP哨兵黑名单缓存',
         'ALIVE_IP_USER_NODE' => '某节点对某用户报告的活跃IP集合（跨机IP去重）',
         'ALIVE_IP_USER_NODES' => '某用户当前被哪些节点报告过活跃IP（跨机IP去重索引）',
+        'USER_RECENT_SERVER_TRAFFIC' => '某用户在某10分钟时间段内各节点的流量（后台展示近期节点）',
         'EMAIL_VERIFY_IP_RATE_LIMIT' => '邮箱验证码-按IP冷却（10秒）',
         'EMAIL_VERIFY_IP_DAILY_COUNT' => '邮箱验证码-按IP每日上限计数',
         'PV_DAILY_LIMIT_IP' => '邀请码PV-按IP每日上限计数',

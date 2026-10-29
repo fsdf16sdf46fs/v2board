@@ -9,10 +9,14 @@ use App\Models\Order;
 use App\Models\Plan;
 use App\Models\User;
 use App\Utils\CacheKey;
+use App\Utils\Helper;
 use Illuminate\Support\Facades\Redis;
 
 class UserService
 {
+    // 近期节点流量按 10 分钟分段记录，后台合并当前段和上一段（覆盖最近 10～20 分钟）
+    const RECENT_SERVER_BUCKET = 600;
+
     private function calcResetDayByMonthFirstDay()
     {
         $today = date('d');
@@ -240,6 +244,39 @@ class UserService
             $ips = array_merge($ips, Redis::smembers(CacheKey::get('ALIVE_IP_USER_NODE', "{$userId}_{$nodeRef}")));
         }
         return array_values(array_unique($ips));
+    }
+
+    // 记录一次上报中各用户在该节点上的流量（$traffic = [userId => 上行+下行字节]，不乘倍率）
+    public function recordRecentServerTraffic(string $protocol, int $serverId, array $traffic)
+    {
+        if (!$traffic) return;
+        $bucket = intdiv(time(), self::RECENT_SERVER_BUCKET);
+        Redis::pipeline(function ($pipe) use ($protocol, $serverId, $traffic, $bucket) {
+            foreach ($traffic as $userId => $bytes) {
+                $key = CacheKey::get('USER_RECENT_SERVER_TRAFFIC', "{$userId}_{$bucket}");
+                $pipe->hincrby($key, "{$protocol}_{$serverId}", (int)$bytes);
+                $pipe->expire($key, self::RECENT_SERVER_BUCKET * 2);
+            }
+        });
+    }
+
+    // 最近 10～20 分钟内流量最大的前 $limit 个节点：[['type' => 'vless', 'id' => 9, 'traffic' => '1.23 GB'], ...]
+    public function getRecentServers(int $userId, int $limit = 3): array
+    {
+        $bucket = intdiv(time(), self::RECENT_SERVER_BUCKET);
+        $traffic = [];
+        foreach ([$bucket - 1, $bucket] as $b) {
+            foreach (Redis::hgetall(CacheKey::get('USER_RECENT_SERVER_TRAFFIC', "{$userId}_{$b}")) as $server => $bytes) {
+                $traffic[$server] = ($traffic[$server] ?? 0) + (int)$bytes;
+            }
+        }
+        arsort($traffic);
+        $servers = [];
+        foreach (array_slice($traffic, 0, $limit, true) as $server => $bytes) {
+            list($type, $id) = explode('_', $server);
+            $servers[] = ['type' => $type, 'id' => (int)$id, 'traffic' => Helper::trafficConvert($bytes)];
+        }
+        return $servers;
     }
 
     public function updateLoginRecords(array $batch)

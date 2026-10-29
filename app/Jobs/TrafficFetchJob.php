@@ -5,6 +5,7 @@ namespace App\Jobs;
 use App\Models\User;
 use App\Services\BillingService;
 use App\Services\MailService;
+use App\Services\UserService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -50,6 +51,7 @@ class TrafficFetchJob implements ShouldQueue
         while ($attempt < $maxAttempts) {
             try {
                 DB::beginTransaction();
+                $recentTraffic = [];
                 foreach (array_keys($this->data) as $userId) {
                     $user = User::lockForUpdate()->find($userId);
                     if (!$user) continue;
@@ -63,6 +65,10 @@ class TrafficFetchJob implements ShouldQueue
                     $downstream = $this->data[$userId][1];
                     $user->u += $upstream * $rate;
                     $user->d += $downstream * $rate;
+                    // 近期节点流量（实际流量，不乘倍率），管理员不记录
+                    if (!$user->is_admin) {
+                        $recentTraffic[$userId] = $upstream + $downstream;
+                    }
 
                     // 如果是【随用随付】套餐，则执行额外的扣费逻辑
                     if ($user->is_PAGO == 1) {
@@ -101,6 +107,12 @@ class TrafficFetchJob implements ShouldQueue
 
                 }
                 DB::commit();
+                // 事务提交后再写，避免死锁重试时重复累加；只用于后台展示，失败不影响计费
+                try {
+                    (new UserService())->recordRecentServerTraffic($this->protocol, $this->server['id'], $recentTraffic);
+                } catch (\Exception $e) {
+                    info('近期节点流量记录失败：' . $e->getMessage());
+                }
                 return;
             } catch (\Exception $e) {
                 DB::rollback();

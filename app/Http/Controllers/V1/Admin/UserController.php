@@ -84,6 +84,7 @@ class UserController extends Controller
                 continue;
             }
             $res[$i]['alive_ips'] = $userService->getAliveIps($res[$i]['id']);
+            $res[$i]['recent_servers'] = $userService->getRecentServers($res[$i]['id']);
         }
         return response([
             'data' => $res,
