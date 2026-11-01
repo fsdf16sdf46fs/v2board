@@ -66,9 +66,12 @@ class ClientController extends Controller
         //     }
         // }
 
+        // 自研客户端：UA 与后台「自研客户端 UA 白名单」中的某一行完全一致
+        $isSelfClient = $this->isSelfClientUA((string)$request->header('User-Agent'));
+
         // UA过滤
         $ua = $this->antiXss->xss_clean($request->header('User-Agent'));
-        if(!$this->checkUA($ua)){
+        if(!$isSelfClient && !$this->checkUA($ua)){
             return redirect('https://bilibili.com');
         }
 
@@ -139,6 +142,9 @@ class ClientController extends Controller
         $array2 = $commonArray;
         $array3 = $commonArray;
 
+        // 下面的分支里，只有最后的 else 下发真实节点；其余分支只下发"提示节点"
+        $noticeOnly = true;
+
         // 校园网（教育网/科技网）IP 优先拦截：只下发提示节点，不给真实节点
         if ((int)config('v2board.campus_block_enable', 1) && CampusNetwork::contains($client_ip)) {
             $array1['name'] = "请断开校园网等公共网络";
@@ -178,7 +184,7 @@ class ClientController extends Controller
             $servers[] = $array1;
             $servers[] = $array2;
             $servers[] = $array3;
-        }elseif ($hasDirectPlan && !$this->supportRalityAndHisteria2($flag) ){
+        }elseif ($hasDirectPlan && !$isSelfClient && !$this->supportRalityAndHisteria2($flag) ){
             $array1['name'] = "本客户端不支持直连套餐";
             $array2['name'] = "请您下载其他客户端";
             $array3['name'] = "然后在新的客户端导入订阅";
@@ -187,11 +193,25 @@ class ClientController extends Controller
             $servers[] = $array2;
             $servers[] = $array3;
         } else{
+            $noticeOnly = false;
             $serverService = new ServerService();
             $servers = $serverService->getAvailableServers($user);
-            $this->setSubscribeInfoToServers($servers, $user, $userISPInfo);
+            // 自研客户端在界面里展示套餐/流量，不需要"信息节点"
+            if (!$isSelfClient) {
+                $this->setSubscribeInfoToServers($servers, $user, $userISPInfo);
+            }
         }
 
+        // 自研客户端固定下发 mihomo(ClashMeta) 配置；提示信息走响应头，不混进节点列表
+        if ($isSelfClient) {
+            if ($noticeOnly) {
+                $notice = implode('，', array_column($servers, 'name'));
+                header('X-Client-Notice: ' . rawurlencode($notice));
+                $servers = [];
+            }
+            $class = new \App\Protocols\ClashMeta($user, $servers);
+            die($class->handle());
+        }
 
 
         if ($flag) {
@@ -246,6 +266,23 @@ class ClientController extends Controller
         ]));
     }
 
+
+    // 自研客户端 UA 白名单：后台每行一个，大小写敏感、完全匹配
+    private function isSelfClientUA(string $ua): bool
+    {
+        $ua = trim($ua);
+        if ($ua === '') {
+            return false;
+        }
+        $lines = preg_split('/\r\n|\r|\n/', (string)config('v2board.client_ua_whitelist', ''));
+        foreach ($lines as $line) {
+            $line = trim($line);
+            if ($line !== '' && hash_equals($line, $ua)) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     //过滤 UA 白名单
     private function checkUA($UA): bool

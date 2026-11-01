@@ -45,6 +45,7 @@ class ConfigSave extends FormRequest
         'renew_order_event_id' => 'in:0,1',
         'change_order_event_id' => 'in:0,1',
         'show_info_to_server_enable' => 'in:0,1',
+        'client_ua_whitelist' => 'nullable|string|max:4096',
         // server
         'server_token' => 'nullable|min:16',
         'server_pull_interval' => 'integer',
