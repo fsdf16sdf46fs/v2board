@@ -17,9 +17,9 @@ class ClientRoute
             // Client
             $router->get($subscribeUri, 'V1\\Client\\ClientController@subscribe')
                 ->name('client.subscribe');   // <— 追加这一句
-            // App
-            $router->get('/app/getConfig', 'V1\\Client\\AppController@getConfig');
-            $router->get('/app/getVersion', 'V1\\Client\\AppController@getVersion');
+            // 旧 Tidalab 客户端的 /app/getConfig、/app/getVersion 已删除：getConfig 只凭订阅
+            // token 就下发全部节点，绕过了订阅接口的 UA、封禁、IP 数和校园网检查。
+            // 自研客户端检查更新走 user/app/getVersion（需要登录）。
         });
     }
 }

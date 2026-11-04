@@ -23,8 +23,8 @@ class UserRoute
             $router->post('/getQuickLoginUrl', 'V1\\User\\UserController@getQuickLoginUrl');
             $router->get ('/getActiveSession', 'V1\\User\\UserController@getActiveSession');
             $router->post('/removeActiveSession', 'V1\\User\\UserController@removeActiveSession');
-            // App：自研客户端（V2Pass）检查更新，复用 AppController@getVersion，需要登录
-            $router->get ('/app/getVersion', 'V1\\Client\\AppController@getVersion');
+            // App：自研客户端（V2Pass）检查更新，需要登录
+            $router->get ('/app/getVersion', 'V1\\User\\AppController@getVersion');
             // Order
             $router->post('/order/save', 'V1\\User\\OrderController@save');
             $router->post('/order/checkout', 'V1\\User\\OrderController@checkout');
