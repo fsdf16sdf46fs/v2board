@@ -26,6 +26,15 @@ class ServerController extends Controller
             abort(304);
         }
 
+        // 只给名字和在线状态：完整行里有 host/port/REALITY 公钥/server_key 等，
+        // 配合用户 uuid 就能绕过订阅接口手搓出全部节点
+        $servers = array_map(function ($server) {
+            return [
+                'name' => $server['name'],
+                'is_online' => $server['is_online'],
+            ];
+        }, $servers);
+
         return response([
             'data' => $servers
         ])->header('ETag', "\"{$eTag}\"");

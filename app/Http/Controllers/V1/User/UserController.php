@@ -102,8 +102,7 @@ class UserController extends Controller
                 'plan_id',
                 'discount',
                 'commission_rate',
-                'telegram_id',
-                'uuid'
+                'telegram_id'
             ])
             ->first();
         if (!$user) {
@@ -142,8 +141,7 @@ class UserController extends Controller
                 'u',
                 'd',
                 'transfer_enable',
-                'email',
-                'uuid'
+                'email'
             ])
             ->first();
         if (!$user) {
@@ -155,7 +153,12 @@ class UserController extends Controller
                 abort(500, __('Subscription plan does not exist'));
             }
         }
-        $user['subscribe_url'] = Helper::buildSubscribeUrl($user['token']);
+        // 订阅链接只给自研客户端（它请求面板接口的 UA 是 "V2PassClient/版本 (系统)"），网页端不再展示。
+        // 这个 UA 不是机密，只是去掉 F12 一眼能看到的入口；真正的拦截在订阅接口按 UA 决定下发什么。
+        if (strpos((string)$request->header('User-Agent'), 'V2PassClient/') === 0) {
+            $user['subscribe_url'] = Helper::buildSubscribeUrl($user['token']);
+        }
+        $user->makeHidden(['token']);
 //        if (($user['expired_at'] === NULL ||($user['expired_at'] != NULL && $user['expired_at'] < time())) && $user['is_PAGO'] == 0) {
 //            $user['subscribe_url'] = 'ni hai mei you tao can huo zhe tao can yi guo qi, qing gou mai tao can';
 //        }

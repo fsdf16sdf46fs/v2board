@@ -42,6 +42,8 @@ class CacheKey
         'EMAIL_VERIFY_IP_RATE_LIMIT' => '邮箱验证码-按IP冷却（10秒）',
         'EMAIL_VERIFY_IP_DAILY_COUNT' => '邮箱验证码-按IP每日上限计数',
         'PV_DAILY_LIMIT_IP' => '邀请码PV-按IP每日上限计数',
+        'TELEGRAM_BIND_CODE' => 'Telegram 绑定码 → 用户ID（一次性，10分钟）',
+        'TELEGRAM_BIND_CODE_USER' => '用户当前有效的 Telegram 绑定码（生成新码时作废旧码）',
     ];
 
     public static function get(string $key, $uniqueValue)
