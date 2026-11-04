@@ -30,18 +30,7 @@ class Shadowrocket
         $expiredDate = date('Y-m-d', $user['expired_at']);
         $uri .= "STATUS=🚀已用流量:{$ud}GB,总流量:{$totalTraffic}GB💡到期时间:{$expiredDate}\r\n";
 
-
-        $bulidFree = false;
-
         foreach ($servers as $item) {
-
-            if(!$bulidFree){
-                $uri .= self::buildTrojanFree('防失联节点');
-                $uri .= self::buildTrojanFree('开启 TLS 中的片段功能');
-                $uri .= self::buildTrojanFree('才能使用防失联节点');
-                $bulidFree = true;
-            }
-
             if ($item['type'] === 'shadowsocks') {
                 $uri .= self::buildShadowsocks($user['uuid'], $item);
             }
@@ -266,43 +255,4 @@ class Shadowrocket
         $uri .= "#{$remarks}\r\n";
         return $uri;
     }
-
-    private static function buildTrojanFree($name)
-    {
-
-
-        $name = rawurlencode($name);
-
-        $add = 'www.visa.com.sg';
-
-        $password = '817beb59-6b0b-4bd3-b672-fb43f5a8f72e';
-
-        //6个https端口可任意选择(443、8443、2053、2083、2087、2096)
-        $ports = [443, 8443, 2053, 2083, 2087, 2096];
-        $selectedPort = $ports[array_rand($ports)];
-
-        $query = http_build_query([
-            'allowInsecure' => false,
-            'peer' => 'v2ps.bolvinbreniser956.workers.dev',
-            'sni' => 'v2ps.bolvinbreniser956.workers.dev'
-        ]);
-        $uri = "trojan://{$password}@{$add}:{$selectedPort}?{$query}";
-
-        $uri .= "&type=ws";
-
-        $path = Helper::encodeURIComponent('/?ed=2560');
-        $uri .= "&path={$path}";
-
-
-        $host = Helper::encodeURIComponent('v2ps.bolvinbreniser956.workers.dev');
-        $uri .= "&host={$host}";
-
-
-        $uri .= "#{$name}\r\n";
-        return $uri;
-
-    }
-
-
-
 }

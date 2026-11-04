@@ -52,7 +52,6 @@ class Kernel extends ConsoleKernel
         // custom function
         $schedule->command('customFunction:replenish 2')->dailyAt('0:0'); //一次性套餐补货 2 个
         $schedule->command('clear:inviteCode')->dailyAt('2:25'); //删除邀请码
-        //$schedule->command('changePort:vmess 1')->dailyAt('2:30'); //VMess节点ID 1 更换端口
         //$schedule->command('customFunction:addCoupon 108 3')->dailyAt('12:00'); // ID 108 优惠券补充 1-5 张
         $schedule->command('customFunction:tongjicaibao')->dailyAt('0:11'); //推送前一天的财报给管理员
         $schedule->command('customFunction:kick 7')->dailyAt('23:45'); //移除群组中过期超过 7 天的用户
