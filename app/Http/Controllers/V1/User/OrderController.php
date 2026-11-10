@@ -62,6 +62,8 @@ class OrderController extends Controller
         if (!$order['plan']) {
             abort(500, __('Subscription plan does not exist'));
         }
+        // 结算页预览用：换成该用户实际能拿到的赠送天数
+        PlanService::applyUserGift($order['plan'], $request->user['id']);
         if ($order->surplus_order_ids) {
             $order['surplus_orders'] = Order::whereIn('id', $order->surplus_order_ids)->get();
         }

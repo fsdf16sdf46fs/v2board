@@ -23,7 +23,7 @@ class PlanController extends Controller
                 abort(500, __('Subscription plan does not exist'));
             }
             return response([
-                'data' => $plan
+                'data' => PlanService::applyUserGift($plan, $user->id)
             ]);
         }
 
@@ -32,6 +32,7 @@ class PlanController extends Controller
             ->orderBy('sort', 'ASC')
             ->get();
         foreach ($plans as $k => $v) {
+            PlanService::applyUserGift($plans[$k], $user->id);
             if ($plans[$k]->capacity_limit === NULL) continue;
             if (!isset($counts[$plans[$k]->id])) continue;
             $plans[$k]->capacity_limit = $plans[$k]->capacity_limit - $counts[$plans[$k]->id]->count;

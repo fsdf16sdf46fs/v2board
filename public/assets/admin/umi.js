@@ -64276,6 +64276,20 @@
                         year_price: null,
                         two_year_price: null,
                         three_year_price: null,
+                        month_gift_days: null,
+                        quarter_gift_days: null,
+                        half_year_gift_days: null,
+                        year_gift_days: null,
+                        two_year_gift_days: null,
+                        three_year_gift_days: null,
+                        promo_month_gift_days: null,
+                        promo_quarter_gift_days: null,
+                        promo_half_year_gift_days: null,
+                        promo_year_gift_days: null,
+                        promo_two_year_gift_days: null,
+                        promo_three_year_gift_days: null,
+                        promo_start_at: null,
+                        promo_end_at: null,
                         onetime_price: null,
                         reset_price: null,
                         setup_price: null,
@@ -64424,6 +64438,63 @@
                     value: null !== this.state.record.three_year_price ? this.state.record.three_year_price : void 0,
                     onChange: e => this.priceOnChange("three_year_price", e.target.value)
                 })))), m.a.createElement(E["a"], {
+                    gutter: 10
+                }, [
+                    ["month", "月付"],
+                    ["quarter", "季付"],
+                    ["half_year", "半年"],
+                    ["year", "年付"],
+                    ["two_year", "两年付"],
+                    ["three_year", "三年付"]
+                ].map(e => m.a.createElement(S["a"], {
+                    md: 4,
+                    key: e[0]
+                }, m.a.createElement("div", {
+                    className: "form-group"
+                }, m.a.createElement("label", null, e[1] + "赠送"), m.a.createElement(C["a"], {
+                    placeholder: "天",
+                    title: "购买该周期时额外赠送的天数，留空则不赠送",
+                    value: null != this.state.record[e[0] + "_gift_days"] ? this.state.record[e[0] + "_gift_days"] : void 0,
+                    onChange: t => this.priceOnChange(e[0] + "_gift_days", t.target.value)
+                }))))), m.a.createElement("div", {
+                    style: {
+                        margin: "4px 0 10px",
+                        opacity: .75
+                    }
+                }, "限时活动：活动时间段内按下方天数赠送，每位用户全站限领 1 次（之后按平时天数）；活动结束自动恢复。天数留空的周期不参加活动。"), m.a.createElement(E["a"], {
+                    gutter: 10
+                }, [
+                    ["month", "月付"],
+                    ["quarter", "季付"],
+                    ["half_year", "半年"],
+                    ["year", "年付"],
+                    ["two_year", "两年付"],
+                    ["three_year", "三年付"]
+                ].map(e => m.a.createElement(S["a"], {
+                    md: 4,
+                    key: e[0]
+                }, m.a.createElement("div", {
+                    className: "form-group"
+                }, m.a.createElement("label", null, e[1] + "活动"), m.a.createElement(C["a"], {
+                    placeholder: "天",
+                    value: null != this.state.record["promo_" + e[0] + "_gift_days"] ? this.state.record["promo_" + e[0] + "_gift_days"] : void 0,
+                    onChange: t => this.priceOnChange("promo_" + e[0] + "_gift_days", t.target.value)
+                }))))), m.a.createElement(E["a"], {
+                    gutter: 10
+                }, [
+                    ["promo_start_at", "活动开始时间"],
+                    ["promo_end_at", "活动截止时间"]
+                ].map(e => m.a.createElement(S["a"], {
+                    md: 12,
+                    key: e[0]
+                }, m.a.createElement("div", {
+                    className: "form-group"
+                }, m.a.createElement("label", null, e[1]), m.a.createElement("input", {
+                    type: "datetime-local",
+                    className: "ant-input",
+                    value: this.state.record[e[0]] ? new Date(1e3 * this.state.record[e[0]] - 6e4 * new Date(1e3 * this.state.record[e[0]]).getTimezoneOffset()).toISOString().slice(0, 16) : "",
+                    onChange: t => this.priceOnChange(e[0], t.target.value ? String(Math.floor(new Date(t.target.value).getTime() / 1e3)) : "")
+                }))))), m.a.createElement(E["a"], {
                     gutter: 10
                 }, m.a.createElement(S["a"], {
                     md: 12

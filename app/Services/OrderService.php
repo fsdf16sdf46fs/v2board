@@ -462,6 +462,15 @@ class OrderService
         $this->user->plan_id = $plan->id;
         $this->user->group_id = $plan->group_id;
         $this->user->expired_at = $this->getTime($order->period, $this->user->expired_at);
+        // 阶梯赠送时长：按付款开通时套餐的配置发放，并记到订单上备查。
+        // 用户下单、后台分配、自动续费都经过这里，是唯一的发放点。
+        // 限时活动期间每人只能领 1 次活动天数（gift_promo_at 记录领取时间），之后按平时的天数送。
+        $gift = PlanService::resolveGift($plan, $order->period, $this->user->id);
+        if ($gift['days'] > 0) {
+            $this->user->expired_at = strtotime("+{$gift['days']} day", $this->user->expired_at);
+            $order->gift_days = $gift['days'];
+            if ($gift['promo']) $order->gift_promo_at = time();
+        }
         $this->user->is_PAGO = 0;
     }
 
