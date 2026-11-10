@@ -64444,8 +64444,8 @@
                     ["quarter", "季付"],
                     ["half_year", "半年"],
                     ["year", "年付"],
-                    ["two_year", "两年付"],
-                    ["three_year", "三年付"]
+                    ["two_year", "两年"],
+                    ["three_year", "三年"]
                 ].map(e => m.a.createElement(S["a"], {
                     md: 4,
                     key: e[0]
@@ -64468,8 +64468,8 @@
                     ["quarter", "季付"],
                     ["half_year", "半年"],
                     ["year", "年付"],
-                    ["two_year", "两年付"],
-                    ["three_year", "三年付"]
+                    ["two_year", "两年"],
+                    ["three_year", "三年"]
                 ].map(e => m.a.createElement(S["a"], {
                     md: 4,
                     key: e[0]
