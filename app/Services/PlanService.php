@@ -84,19 +84,30 @@ class PlanService
     public static function applyUserGift(Plan $plan, $userId)
     {
         $promoPeriods = [];
+        // 活动进行中但该用户已领过的周期：前端据此提示「已参加活动，现为常规赠送」
+        $usedPeriods = [];
         $hidden = ['promo_start_at', 'promo_end_at'];
-        $canUsePromo = null;
+        $active = null;
+        $used = false;
         foreach (self::GIFT_PERIODS as $key) {
             $hidden[] = 'promo_' . $key . '_gift_days';
             $promoDays = self::clampGiftDays($plan->{'promo_' . $key . '_gift_days'});
             if ($promoDays <= 0) continue;
-            if ($canUsePromo === null) $canUsePromo = self::canUsePromo($plan, $userId);
-            if (!$canUsePromo) continue;
+            if ($active === null) {
+                $active = self::isPromoActive($plan);
+                $used = $active && self::hasUsedPromo($plan, $userId);
+            }
+            if (!$active) continue;
+            if ($used) {
+                $usedPeriods[] = $key . '_price';
+                continue;
+            }
             $plan->{$key . '_gift_days'} = $promoDays;
             $promoPeriods[] = $key . '_price';
         }
         $plan->gift_promo_end_at = $promoPeriods ? (int)$plan->promo_end_at : null;
         $plan->gift_promo_periods = $promoPeriods;
+        $plan->gift_promo_used_periods = $usedPeriods;
         $plan->makeHidden($hidden);
         return $plan;
     }
