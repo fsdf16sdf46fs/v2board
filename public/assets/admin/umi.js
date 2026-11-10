@@ -75474,7 +75474,14 @@
                     span: 6
                 }, "\u56de\u8c03\u5355\u53f7"), g.a.createElement(S["a"], {
                     span: 18
-                }, this.state.order.callback_no ? this.state.order.callback_no : "-")), g.a.createElement(_["a"], null), g.a.createElement(E["a"], {
+                }, this.state.order.callback_no ? this.state.order.callback_no : "-")), g.a.createElement(E["a"], {
+                    gutter: [16, 16],
+                    style: n
+                }, g.a.createElement(S["a"], {
+                    span: 6
+                }, "赠送时长"), g.a.createElement(S["a"], {
+                    span: 18
+                }, this.state.order.gift_days > 0 ? this.state.order.gift_days + " 天" + (this.state.order.gift_promo_at ? "（限时活动）" : "") : "-")), g.a.createElement(_["a"], null), g.a.createElement(E["a"], {
                     gutter: [16, 16],
                     style: n
                 }, g.a.createElement(S["a"], {
