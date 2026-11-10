@@ -64260,7 +64260,9 @@
             S = (n("jCWc"), n("kPKH")),
             k = (n("/zsF"), n("PArb")),
             C = (n("5NDa"), n("5rEg")),
-            O = n("8zNj");
+            O = n("8zNj"),
+            planPromoPicker = (n("iQDF"), n("+eQT")),
+            planPromoMoment = n.n(n("wd/R"));
         class T extends m.a.Component {
             constructor(e) {
                 super(e), this.state = {
@@ -64481,20 +64483,33 @@
                     onChange: t => this.priceOnChange("promo_" + e[0] + "_gift_days", t.target.value)
                 }))))), m.a.createElement(E["a"], {
                     gutter: 10
-                }, [
-                    ["promo_start_at", "活动开始时间"],
-                    ["promo_end_at", "活动截止时间"]
-                ].map(e => m.a.createElement(S["a"], {
-                    md: 12,
-                    key: e[0]
+                }, m.a.createElement(S["a"], {
+                    md: 24
                 }, m.a.createElement("div", {
                     className: "form-group"
-                }, m.a.createElement("label", null, e[1]), m.a.createElement("input", {
-                    type: "datetime-local",
-                    className: "ant-input",
-                    value: this.state.record[e[0]] ? new Date(1e3 * this.state.record[e[0]] - 6e4 * new Date(1e3 * this.state.record[e[0]]).getTimezoneOffset()).toISOString().slice(0, 16) : "",
-                    onChange: t => this.priceOnChange(e[0], t.target.value ? String(Math.floor(new Date(t.target.value).getTime() / 1e3)) : "")
-                }))))), m.a.createElement(E["a"], {
+                }, m.a.createElement("label", null, "活动起止时间"), m.a.createElement(planPromoPicker["a"].RangePicker, {
+                    style: {
+                        width: "100%"
+                    },
+                    showTime: {
+                        format: "HH:mm"
+                    },
+                    format: "YYYY-MM-DD HH:mm",
+                    placeholder: ["Start Time", "End Time"],
+                    value: [this.state.record.promo_start_at ? planPromoMoment()(1e3 * this.state.record.promo_start_at) : null, this.state.record.promo_end_at ? planPromoMoment()(1e3 * this.state.record.promo_end_at) : null],
+                    onChange: e => this.setState({
+                        record: d()({}, this.state.record, {
+                            promo_start_at: e[0] ? e[0].format("X") : null,
+                            promo_end_at: e[1] ? e[1].format("X") : null
+                        })
+                    }),
+                    onOk: e => this.setState({
+                        record: d()({}, this.state.record, {
+                            promo_start_at: e[0] ? e[0].format("X") : null,
+                            promo_end_at: e[1] ? e[1].format("X") : null
+                        })
+                    })
+                })))), m.a.createElement(E["a"], {
                     gutter: 10
                 }, m.a.createElement(S["a"], {
                     md: 12
