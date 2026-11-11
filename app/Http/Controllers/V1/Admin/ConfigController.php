@@ -112,7 +112,7 @@ class ConfigController extends Controller
                 'show_info_to_server_enable' => (int)config('v2board.show_info_to_server_enable', 0),
                 'client_ua_whitelist' => config('v2board.client_ua_whitelist', ''),
                 'client_restrict_enable' => (int)config('v2board.client_restrict_enable', 0),
-                'client_ua_third_party' => config('v2board.client_ua_third_party', 'shadowrocket'),
+                'client_ua_keywords' => config('v2board.client_ua_keywords', \App\Http\Controllers\V1\Client\ClientController::DEFAULT_UA_KEYWORDS),
                 'shadowrocket_min_build' => config('v2board.shadowrocket_min_build', 3378)
             ],
             'frontend' => [

@@ -4815,8 +4815,8 @@
                     checked: parseInt(r.show_info_to_server_enable),
                     onChange: e => this.set("subscribe", "show_info_to_server_enable", e ? 1 : 0)
                 })), f.a.createElement(m, {
-                    title: "\u4ec5\u5141\u8bb8\u81ea\u7814\u5ba2\u6237\u7aef\u53ca\u6307\u5b9a\u7b2c\u4e09\u65b9\u5ba2\u6237\u7aef",
-                    description: "\u5f00\u542f\u540e\uff0c\u53ea\u6709\u81ea\u7814\u5ba2\u6237\u7aef\u548c\u4e0b\u65b9\u300c\u7b2c\u4e09\u65b9 UA \u767d\u540d\u5355\u5173\u952e\u8bcd\u300d\u547d\u4e2d\u7684\u5ba2\u6237\u7aef\u80fd\u83b7\u53d6\u8282\u70b9\uff08\u5c0f\u706b\u7bad\u8fd8\u9700\u6ee1\u8db3\u6700\u4f4e\u7248\u672c\uff09\uff0c\u5176\u5b83\u5ba2\u6237\u7aef\u53ea\u4f1a\u6536\u5230\u63d0\u793a\u8282\u70b9\u3002\u5173\u95ed\u540e\u4efb\u4f55\u5ba2\u6237\u7aef\u90fd\u53ef\u62c9\u53d6\u8ba2\u9605\u3002"
+                    title: "\u4ec5\u5141\u8bb8\u81ea\u7814\u5ba2\u6237\u7aef\u53ca\u5c0f\u706b\u7bad",
+                    description: "\u5f00\u542f\u540e\u53ea\u6709\u81ea\u7814\u5ba2\u6237\u7aef\u548c\u8fbe\u5230\u6700\u4f4e\u7248\u672c\u7684\u5c0f\u706b\u7bad\u80fd\u83b7\u53d6\u8282\u70b9\uff1b\u300c\u7b2c\u4e09\u65b9 UA \u767d\u540d\u5355\u5173\u952e\u8bcd\u300d\u5185\u7684\u5ba2\u6237\u7aef\u53ea\u4f1a\u6536\u5230\u300c\u8bf7\u4e0b\u8f7d V2Pass \u5ba2\u6237\u7aef\u300d\u63d0\u793a\u8282\u70b9\u3002\u5173\u95ed\u540e\u81ea\u7814\u5ba2\u6237\u7aef\u3001\u5c0f\u706b\u7bad\uff08\u4e0d\u9650\u7248\u672c\uff09\u548c\u7b2c\u4e09\u65b9\u767d\u540d\u5355\u5185\u7684\u5ba2\u6237\u7aef\u90fd\u53ef\u62c9\u53d6\u8ba2\u9605\u3002\u4e0d\u5728\u4ee5\u4e0a\u767d\u540d\u5355\u5185\u7684 UA\uff08\u542b\u6d4f\u89c8\u5668\uff09\u65e0\u8bba\u5f00\u5173\u5982\u4f55\u90fd\u4f1a\u88ab\u62d2\u7edd\u3002"
                 }, f.a.createElement(l["a"], {
                     checked: parseInt(r.client_restrict_enable),
                     onChange: e => this.set("subscribe", "client_restrict_enable", e ? 1 : 0)
@@ -4830,23 +4830,23 @@
                     defaultValue: r.client_ua_whitelist,
                     onChange: e => this.set("subscribe", "client_ua_whitelist", e.target.value)
                 })), f.a.createElement(m, {
-                    title: "\u7b2c\u4e09\u65b9 UA \u767d\u540d\u5355\u5173\u952e\u8bcd",
-                    description: "\u591a\u4e2a\u7528\u82f1\u6587\u9017\u53f7\u5206\u9694\uff0c\u4e0d\u533a\u5206\u5927\u5c0f\u5199\uff0cUA \u5305\u542b\u4efb\u4e00\u5173\u952e\u8bcd\u5373\u653e\u884c\u3002\u4ec5\u5728\u4e0a\u65b9\u603b\u5f00\u5173\u5f00\u542f\u65f6\u751f\u6548\u3002\u7559\u7a7a\u5219\u53ea\u5141\u8bb8\u81ea\u7814\u5ba2\u6237\u7aef\u3002"
-                }, f.a.createElement("input", {
-                    type: "text",
-                    className: "form-control",
-                    placeholder: "shadowrocket",
-                    defaultValue: r.client_ua_third_party,
-                    onChange: e => this.set("subscribe", "client_ua_third_party", e.target.value)
-                })), f.a.createElement(m, {
                     title: "\u5c0f\u706b\u7bad\u6700\u4f4e\u7248\u672c\u53f7",
-                    description: "\u7eaf\u6570\u5b57\uff0c\u53d6 UA \u4e2d Shadowrocket/ \u540e\u9762\u7684\u6570\u5b57\uff08\u4f8b\u5982 2.2.90 \u6b63\u5f0f\u7248\u4e3a 3378\uff09\u3002\u4f4e\u4e8e\u6b64\u503c\u7684\u5c0f\u706b\u7bad\u53ea\u4f1a\u6536\u5230\u300c\u8bf7\u66f4\u65b0\u5c0f\u706b\u7bad\u300d\u63d0\u793a\u8282\u70b9\u3002\u4ec5\u5728\u603b\u5f00\u5173\u5f00\u542f\u65f6\u751f\u6548\uff0c\u7559\u7a7a\u6216 0 \u5219\u4e0d\u9650\u5236\u3002"
+                    description: "\u5c0f\u706b\u7bad\u5355\u72ec\u653e\u884c\uff0c\u4e0d\u7528\u5199\u8fdb\u4e0b\u65b9\u7684\u5173\u952e\u8bcd\u3002\u603b\u5f00\u5173\u5f00\u542f\u65f6\uff0cUA \u4e2d Shadowrocket/ \u540e\u9762\u7684\u6570\u5b57\u4f4e\u4e8e\u6b64\u503c\u7684\u5c0f\u706b\u7bad\u53ea\u4f1a\u6536\u5230\u300c\u8bf7\u66f4\u65b0\u5c0f\u706b\u7bad\u300d\u63d0\u793a\u8282\u70b9\uff1b\u5173\u95ed\u65f6\u4e0d\u9650\u7248\u672c\u3002\u7eaf\u6570\u5b57\uff082.2.90 \u6b63\u5f0f\u7248\u4e3a 3378\uff09\uff0c\u7559\u7a7a\u6216 0 \u5219\u4e0d\u9650\u5236\u3002"
                 }, f.a.createElement("input", {
                     type: "text",
                     className: "form-control",
                     placeholder: "3378",
                     defaultValue: r.shadowrocket_min_build,
                     onChange: e => this.set("subscribe", "shadowrocket_min_build", e.target.value)
+                })), f.a.createElement(m, {
+                    title: "\u7b2c\u4e09\u65b9 UA \u767d\u540d\u5355\u5173\u952e\u8bcd",
+                    description: "\u603b\u5f00\u5173\u5173\u95ed\u65f6\u653e\u884c\u7684\u7b2c\u4e09\u65b9\u5ba2\u6237\u7aef\uff08\u5f00\u542f\u540e\u53ea\u6536\u5230\u63d0\u793a\u8282\u70b9\uff09\u3002\u591a\u4e2a\u7528\u82f1\u6587\u9017\u53f7\u5206\u9694\uff0c\u4e0d\u533a\u5206\u5927\u5c0f\u5199\uff0cUA \u5305\u542b\u4efb\u4e00\u5173\u952e\u8bcd\u5373\u547d\u4e2d\uff1b\u7559\u7a7a\u5219\u4e0d\u653e\u884c\u4efb\u4f55\u7b2c\u4e09\u65b9\u5ba2\u6237\u7aef\u3002\u65b0\u589e\u5173\u952e\u8bcd\u65f6\uff0c\u8bb0\u5f97\u540c\u6b65\u52a0\u5230\u8ba2\u9605 CDN \u7684 WAF UA \u767d\u540d\u5355\uff0c\u5426\u5219\u8bf7\u6c42\u5230\u4e0d\u4e86\u6e90\u7ad9\u3002"
+                }, f.a.createElement("textarea", {
+                    className: "form-control",
+                    rows: 3,
+                    placeholder: "clash,sing-box,hiddify",
+                    defaultValue: r.client_ua_keywords,
+                    onChange: e => this.set("subscribe", "client_ua_keywords", e.target.value)
                 })))), f.a.createElement(s["a"].TabPane, {
                     tab: "\u9080\u8bf7&\u4f63\u91d1",
                     key: "invite"

@@ -71,25 +71,23 @@ class ClientController extends Controller
 
         $ua = (string)$this->antiXss->xss_clean((string)$request->header('User-Agent'));
 
-        // 后台「仅允许自研客户端及指定第三方客户端」总开关：开启时只有自研客户端和
-        // 「第三方 UA 白名单关键词」命中的客户端（小火箭还要满足最低版本）能拿到真实节点
-        $restrict = (int)config('v2board.client_restrict_enable', 0) === 1;
-        $isAllowedThirdParty = $restrict && !$isSelfClient && $this->matchThirdPartyUA($ua);
-
-        // UA过滤（白名单关键词命中的客户端不受内置列表限制）
-        if (!$isSelfClient && !$isAllowedThirdParty && !$this->checkUA($ua)) {
+        // 允许拉订阅的只有三类：自研客户端、小火箭（单独放行）、后台「第三方 UA 白名单关键词」
+        // 命中的客户端。其余 UA（含浏览器）不论总开关如何一律跳走
+        $isShadowrocket = !$isSelfClient && stripos($ua, 'shadowrocket') !== false;
+        $isThirdParty = !$isSelfClient && !$isShadowrocket && $this->matchThirdPartyUA($ua);
+        if (!$isSelfClient && !$isShadowrocket && !$isThirdParty) {
             return redirect('https://bilibili.com');
         }
 
-        // 不放行的已知客户端（Clash Verge、旧版小火箭等）只下发提示节点，让旧节点被替换掉、
-        // 用户立刻知道要换客户端/升级。放在多 IP 统计之前：没换客户端的旧订阅还在后台
-        // 自动更新，不能占用户的 IP 名额。
+        // 后台「仅允许自研客户端及小火箭」总开关：开启后第三方客户端（Clash Verge 等）和
+        // 版本过低的小火箭只下发提示节点，让旧节点被替换掉、用户立刻知道要换客户端/升级。
+        // 放在多 IP 统计之前：没换客户端的旧订阅还在后台自动更新，不能占用户的 IP 名额。
+        $restrict = (int)config('v2board.client_restrict_enable', 0) === 1;
         if ($restrict && !$isSelfClient) {
             $notice = null;
-            if (!$isAllowedThirdParty) {
+            if ($isThirdParty) {
                 $notice = ['本客户端已停止支持', '请前往官网下载 V2Pass 客户端', '如需帮助，可工单/邮件联系'];
-            } elseif (stripos($ua, 'shadowrocket') !== false
-                && $this->extractShadowrocketBuild($ua) < (int)config('v2board.shadowrocket_min_build', 3378)) {
+            } elseif ($this->extractShadowrocketBuild($ua) < (int)config('v2board.shadowrocket_min_build', 3378)) {
                 $notice = ['您的小火箭版本过低', '请到 App Store 更新小火箭', '然后再更新订阅'];
             }
             if ($notice !== null) {
@@ -317,21 +315,6 @@ class ClientController extends Controller
         return false;
     }
 
-    //过滤 UA 白名单
-    private function checkUA($UA): bool
-    {
-        $UA = strtolower($UA);
-        $allowedFlags = ['clash', 'clashforandroid', 'meta', 'shadowrocket', 'sing-box', 'SFA', 'clashforwindows', 'clash-verge', 'hiddify', 'loon',  'quantumult', 'sagerNet', 'surge', 'v2ray', 'passwall', 'ssrplus', 'shadowsocks', 'netch', 'nyanpasu', 'streisand'];
-
-        foreach ($allowedFlags as $allowedFlag) {
-            if (strpos($UA, $allowedFlag) !== false) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
 
     private function checkTokenRequest($userID, $userIP, $userISPInfo): bool
     {
@@ -356,6 +339,9 @@ class ClientController extends Controller
         return true;
     }
 
+    // 后台「第三方 UA 白名单关键词」未保存过时的默认值（即原先写死在代码里的客户端列表，去掉单独放行的小火箭）
+    const DEFAULT_UA_KEYWORDS = 'clash,meta,sing-box,sfa,hiddify,loon,quantumult,sagernet,surge,v2ray,passwall,ssrplus,shadowsocks,netch,nyanpasu,streisand';
+
     // 第三方客户端白名单：后台英文逗号分隔的关键词，UA 包含任一关键词即命中（不区分大小写）
     private function matchThirdPartyUA(string $ua): bool
     {
@@ -363,7 +349,7 @@ class ClientController extends Controller
         if ($ua === '') {
             return false;
         }
-        $keywords = explode(',', (string)config('v2board.client_ua_third_party', 'shadowrocket'));
+        $keywords = explode(',', (string)config('v2board.client_ua_keywords', self::DEFAULT_UA_KEYWORDS));
         foreach ($keywords as $keyword) {
             $keyword = strtolower(trim($keyword));
             if ($keyword !== '' && strpos($ua, $keyword) !== false) {

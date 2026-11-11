@@ -47,7 +47,7 @@ class ConfigSave extends FormRequest
         'show_info_to_server_enable' => 'in:0,1',
         'client_ua_whitelist' => 'nullable|string|max:4096',
         'client_restrict_enable' => 'in:0,1',
-        'client_ua_third_party' => 'nullable|string|max:1024',
+        'client_ua_keywords' => 'nullable|string|max:1024',
         'shadowrocket_min_build' => 'nullable|integer|min:0',
         // server
         'server_token' => 'nullable|min:16',
