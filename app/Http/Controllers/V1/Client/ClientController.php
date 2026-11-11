@@ -69,10 +69,43 @@ class ClientController extends Controller
         // 自研客户端：UA 与后台「自研客户端 UA 白名单」中的某一行完全一致
         $isSelfClient = $this->isSelfClientUA((string)$request->header('User-Agent'));
 
-        // UA过滤
-        $ua = $this->antiXss->xss_clean($request->header('User-Agent'));
-        if(!$isSelfClient && !$this->checkUA($ua)){
+        $ua = (string)$this->antiXss->xss_clean((string)$request->header('User-Agent'));
+
+        // 后台「仅允许自研客户端及指定第三方客户端」总开关：开启时只有自研客户端和
+        // 「第三方 UA 白名单关键词」命中的客户端（小火箭还要满足最低版本）能拿到真实节点
+        $restrict = (int)config('v2board.client_restrict_enable', 0) === 1;
+        $isAllowedThirdParty = $restrict && !$isSelfClient && $this->matchThirdPartyUA($ua);
+
+        // UA过滤（白名单关键词命中的客户端不受内置列表限制）
+        if (!$isSelfClient && !$isAllowedThirdParty && !$this->checkUA($ua)) {
             return redirect('https://bilibili.com');
+        }
+
+        // 不放行的已知客户端（Clash Verge、旧版小火箭等）只下发提示节点，让旧节点被替换掉、
+        // 用户立刻知道要换客户端/升级。放在多 IP 统计之前：没换客户端的旧订阅还在后台
+        // 自动更新，不能占用户的 IP 名额。
+        if ($restrict && !$isSelfClient) {
+            $notice = null;
+            if (!$isAllowedThirdParty) {
+                $notice = ['本客户端已停止支持', '请前往官网下载 V2Pass 客户端', '如需帮助，可工单/邮件联系'];
+            } elseif (stripos($ua, 'shadowrocket') !== false
+                && $this->extractShadowrocketBuild($ua) < (int)config('v2board.shadowrocket_min_build', 3378)) {
+                $notice = ['您的小火箭版本过低', '请到 App Store 更新小火箭', '然后再更新订阅'];
+            }
+            if ($notice !== null) {
+                $servers = array_map(function ($name) {
+                    return [
+                        'type' => 'shadowsocks',
+                        'host' => 'baidu.com',
+                        'port' => 8888,
+                        'cipher' => 'aes-128-gcm',
+                        'name' => $name,
+                    ];
+                }, $notice);
+                $flag = strtolower($this->antiXss->xss_clean($request->input('flag'))
+                    ?? ($_SERVER['HTTP_USER_AGENT'] ?? ''));
+                $this->output($user, $servers, $flag);
+            }
         }
 
         // 过滤封禁用户
@@ -120,13 +153,17 @@ class ClientController extends Controller
             }
         }
 
-        //优先识别 flag 然后识别 UA
-        $flag = $this->antiXss->xss_clean($request->input('flag'))
-            ?? ($_SERVER['HTTP_USER_AGENT'] ?? '');
-        $flag = strtolower($flag);
+        if ($restrict) {
+            // 开关开启时走到这里的只有放行的客户端：只认 UA、忽略 flag 参数。
+            // 否则伪装成小火箭 UA 再带 &flag=meta 就能拿到完整的 Clash Meta 配置
+            $flag = strtolower($_SERVER['HTTP_USER_AGENT'] ?? '');
+        } else {
+            //优先识别 flag 然后识别 UA
+            $flag = strtolower($this->antiXss->xss_clean($request->input('flag'))
+                ?? ($_SERVER['HTTP_USER_AGENT'] ?? ''));
+        }
 
-        // 检查 4 种情况： 【按周期】套餐过期、【按流量】套餐满流量、【随用随付】套餐没余额、小火箭版本太低，用不了直连套餐
-        // 小火箭版本 2.2.30(1947)
+        // 检查 3 种情况： 【按周期】套餐过期、【按流量】套餐满流量、【随用随付】套餐没余额
 
         $hasDirectPlan = $userService->hasDirectPlan($user);
 
@@ -176,14 +213,6 @@ class ClientController extends Controller
             $servers[] = $array1;
             $servers[] = $array2;
             $servers[] = $array3;
-        }elseif ($hasDirectPlan && strpos($flag, 'shadowrocket') && $this->extractShadowrocketVersion($flag) < 1947){
-            $array1['name'] = "您的小火箭本版不支持直连套餐";
-            $array2['name'] = "请更新小火箭";
-            $array3['name'] = "然后再更新订阅";
-
-            $servers[] = $array1;
-            $servers[] = $array2;
-            $servers[] = $array3;
         }elseif ($hasDirectPlan && !$isSelfClient && !$this->supportRalityAndHisteria2($flag) ){
             $array1['name'] = "本客户端不支持直连套餐";
             $array2['name'] = "请您下载其他客户端";
@@ -213,7 +242,12 @@ class ClientController extends Controller
             die($class->handle());
         }
 
+        $this->output($user, $servers, $flag);
+    }
 
+    // 按 flag（已转小写）选协议格式输出，匹配不到时用通用格式
+    private function output($user, array $servers, string $flag)
+    {
         if ($flag) {
             foreach (array_reverse(glob(app_path('Protocols') . '/*.php')) as $file) {
                 $file = 'App\\Protocols\\' . basename($file, '.php');
@@ -225,7 +259,6 @@ class ClientController extends Controller
         }
         $class = new General($user, $servers);
         die($class->handle());
-
     }
 
     private function setSubscribeInfoToServers(&$servers, $user, $info)
@@ -323,10 +356,27 @@ class ClientController extends Controller
         return true;
     }
 
-    private function extractShadowrocketVersion($ua) {
-        $pattern = '/Shadowrocket\/(\d+)/';
-        preg_match($pattern, $ua, $matches);
-        return $matches[1] ?? '未知版本';
+    // 第三方客户端白名单：后台英文逗号分隔的关键词，UA 包含任一关键词即命中（不区分大小写）
+    private function matchThirdPartyUA(string $ua): bool
+    {
+        $ua = strtolower($ua);
+        if ($ua === '') {
+            return false;
+        }
+        $keywords = explode(',', (string)config('v2board.client_ua_third_party', 'shadowrocket'));
+        foreach ($keywords as $keyword) {
+            $keyword = strtolower(trim($keyword));
+            if ($keyword !== '' && strpos($ua, $keyword) !== false) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    // 小火箭 UA 形如 "Shadowrocket/3488 CFNetwork/..."，取 build 号；取不到返回 0（视为最低）
+    private function extractShadowrocketBuild(string $ua): int
+    {
+        return preg_match('/Shadowrocket\/(\d+)/i', $ua, $matches) ? (int)$matches[1] : 0;
     }
 
     private function supportRalityAndHisteria2($flag) {

@@ -46,6 +46,9 @@ class ConfigSave extends FormRequest
         'change_order_event_id' => 'in:0,1',
         'show_info_to_server_enable' => 'in:0,1',
         'client_ua_whitelist' => 'nullable|string|max:4096',
+        'client_restrict_enable' => 'in:0,1',
+        'client_ua_third_party' => 'nullable|string|max:1024',
+        'shadowrocket_min_build' => 'nullable|integer|min:0',
         // server
         'server_token' => 'nullable|min:16',
         'server_pull_interval' => 'integer',
@@ -120,7 +123,9 @@ class ConfigSave extends FormRequest
             'telegram_discuss_link.url' => 'Telegram群组地址必须为URL格式，必须携带http(s)://',
             'logo.url' => 'LOGO URL格式不正确，必须携带https(s)://',
             'secure_path.min' => '后台路径长度最小为8位',
-            'secure_path.regex' => '后台路径只能为字母或数字'
+            'secure_path.regex' => '后台路径只能为字母或数字',
+            'shadowrocket_min_build.integer' => '小火箭最低版本号只能填纯数字',
+            'shadowrocket_min_build.min' => '小火箭最低版本号不能为负数'
         ];
     }
 }
