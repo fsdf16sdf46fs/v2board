@@ -141,14 +141,6 @@ class UserService
         return false;
     }
 
-    public function hasDirectPlan(User $user): bool
-    {
-        $directPlanIDs = [15, 16]; // 存储直连套餐的ID，以后要添加新的ID只需在此数组中添加即可
-        $planID = $user->plan_id;
-        // 检查用户的套餐ID是否在直连套餐的ID数组中
-        return in_array($planID, $directPlanIDs);
-    }
-
 
     public function getAvailableUsers()
     {

@@ -163,8 +163,6 @@ class ClientController extends Controller
 
         // 检查 3 种情况： 【按周期】套餐过期、【按流量】套餐满流量、【随用随付】套餐没余额
 
-        $hasDirectPlan = $userService->hasDirectPlan($user);
-
         $URL = config('v2board.app_url');
         $commonArray = [
             'type' => 'shadowsocks',
@@ -207,14 +205,6 @@ class ClientController extends Controller
             $array1['name'] = "您的余额不足";
             $array2['name'] = "请到官网充值";
             $array3['name'] = "如需帮助，可工单/邮件联系";
-
-            $servers[] = $array1;
-            $servers[] = $array2;
-            $servers[] = $array3;
-        }elseif ($hasDirectPlan && !$isSelfClient && !$this->supportRalityAndHisteria2($flag) ){
-            $array1['name'] = "本客户端不支持直连套餐";
-            $array2['name'] = "请您下载其他客户端";
-            $array3['name'] = "然后在新的客户端导入订阅";
 
             $servers[] = $array1;
             $servers[] = $array2;
@@ -363,16 +353,6 @@ class ClientController extends Controller
     private function extractShadowrocketBuild(string $ua): int
     {
         return preg_match('/Shadowrocket\/(\d+)/i', $ua, $matches) ? (int)$matches[1] : 0;
-    }
-
-    private function supportRalityAndHisteria2($flag) {
-        $keywords = ['verge', 'meta', 'nyanpasu', 'hiddify', 'sing', 'passwall', 'shadowrocket', 'streisand'];
-        foreach ($keywords as $keyword) {
-            if (strpos($flag, $keyword) !== false) {
-                return true;
-            }
-        }
-        return false;
     }
 
 }
