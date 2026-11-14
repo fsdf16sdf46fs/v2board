@@ -144,8 +144,8 @@ proxies:
 proxy-groups:
   - { name: $app_name, type: select, disable-udp: false, proxies: ["自动选择", "故障转移"]}
   - { name: "🌎谷歌系", type: select, disable-udp: false, proxies: ["自动选择", "故障转移"]}
-  - { name: "🤖OpenAI", type: select, disable-udp: false, proxies: ["自动选择", "故障转移"]}
-  - { name: "🤖Anthropic", type: select, disable-udp: false, proxies: ["自动选择", "故障转移"]}
+  - { name: "🤖OpenAI", type: select, disable-udp: false, include-all-proxies: true, exclude-filter: "^🇭🇰" }
+  - { name: "🤖Anthropic", type: select, disable-udp: false, include-all-proxies: true, exclude-filter: "^🇭🇰" }
   - { name: "😻动画疯", type: select, disable-udp: false, proxies: [/TW/,"故障转移"]}
   - { name: "🍿AbemaTV", type: select, disable-udp: false, proxies: ["自动选择", "故障转移"]}
   - { name: "🎴Instagram", type: select, disable-udp: false, proxies: ["自动选择", "故障转移"]}
